@@ -1,0 +1,67 @@
+version: '2'
+
+services:
+  package-example-lambda:
+    image: akino1976/lambda-packer
+    command: ${PACKAGE_NAME}
+    volumes:
+      - ./example_handler:/app/src
+      - ./packages:/packages
+
+  lambdaserver:
+    image: bambora-dkr.jfrog.io/lambdaserver-python3.7:${VERSION}
+    environment:
+      PACKAGE_NAME: ${PACKAGE_NAME}
+      PYTHONDONTWRITEBYTECODE: 1
+    volumes:
+      - ./packages:/packages
+
+  lambdaserver-watch:
+    image: bambora-dkr.jfrog.io/lambdaserver-python3.7:${VERSION}
+    command: watchmedo auto-restart --patterns="*.py;*.y*ml" python app.py
+    environment:
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONUNBUFFERED: 1
+      FLASK_DEBUG: 1
+      PACKAGE_NAME: ${PACKAGE_NAME}
+      RUN_IN_WATCH_MODE: 1
+      EXEC_BEFORE: |
+        export PYTHONPATH=$$PYTHONPATH:/tmp/unpacked; \
+        unzip -o /packages/${PACKAGE_NAME} -d /tmp/unpacked/
+    ports:
+      - 5000:80
+    volumes:
+      - ./lambdaserver:/lambdaserver
+      - ./packages:/packages
+      - ./example_handler:/var/task
+
+  systemtests-base:
+    image: systemtests-lambdaserver-python3.7:${TEST_VERSION}
+    environment:
+      PYTHONDONTWRITEBYTECODE: 1
+    build:
+      context: systemtests
+      dockerfile: Dockerfile
+      args:
+        BAMBORA_PYPI_USERNAME: ${BAMBORA_PYPI_USERNAME}
+        BAMBORA_PYPI_PASSWORD: ${BAMBORA_PYPI_PASSWORD}
+
+  systemtests:
+    extends:
+      service: systemtests-base
+      file: docker-compose.yaml
+    depends_on:
+      - lambdaserver
+
+  systemtests-watch:
+    extends:
+      service: systemtests-base
+      file: docker-compose.yaml
+    entrypoint: ptw
+    command: --ext=py,feature --ignore=/.cache/** --config pytest.cfg
+    volumes:
+      - ./systemtests:/systemtests
+    links:
+      - lambdaserver-watch:lambdaserver
+    depends_on:
+      - lambdaserver-watch

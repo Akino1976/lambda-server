@@ -1,0 +1,2 @@
+PyYAML==5.12
+pytest-watch==4.2.0

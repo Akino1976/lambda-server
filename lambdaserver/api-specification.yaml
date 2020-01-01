@@ -1,0 +1,115 @@
+swagger: '2.0'
+info:
+  version: '0.0.1'
+  title: lambdaserver-python3.7
+host: 'localhost:5000'
+basePath: /
+schemes:
+  - http
+
+consumes:
+  - application/json
+produces:
+  - application/json
+  - application/problem+json
+
+paths:
+
+  /health:
+    get:
+      operationId: endpoints.health
+
+      responses:
+        200:
+          description: Returns OK
+
+  /invoke/{lambda_handler}:
+    post:
+      operationId: endpoints.invoke_lambda
+
+      parameters:
+        - name: lambda_handler
+          in: path
+          type: string
+          description: The lambda handler
+          required: true
+        - name: parameters
+          in: body
+          schema:
+            $ref: '#/definitions/InvokeParameters'
+          required: true
+
+      responses:
+        200:
+          description: Lambda was executed without any uncaught errors
+          schema:
+            $ref: '#/definitions/InvokeSuccessResponse'
+        400:
+          description: Bad data
+        500:
+          description: The lambda failed to execute or executed with errors
+          schema:
+           $ref: '#/definitions/InvokeErrorResponse'
+
+definitions:
+
+  InvokeParameters:
+    type: object
+    required:
+      - event
+    properties:
+      event:
+        type: object
+        description: The event variables with which to call the lambda
+      environment:
+        type: object
+        description: The environment variables with which to call the lambda
+
+  InvokeSuccessResponse:
+    type: object
+    description: The response object for successful lambda invocations.
+    required:
+      - logLines
+      - returnValue
+    properties:
+      logLines:
+        type: array
+        description: List of all the lines outputted by the logs
+        items:
+          type: string
+      returnValue:
+        description: The output of the lambda function. Can be any type
+
+  InvokeErrorResponse:
+    type: object
+    description: The response object for failed lambda invocations
+    required:
+      - logLines
+    properties:
+      logLines:
+        type: array
+        description: List of all the lines outputted by the logs
+        items:
+          type: string
+      error:
+        $ref: '#/definitions/LambdaError'
+
+  LambdaError:
+    type: object
+    description: The error that is returned by lambda
+    required:
+      - errorMessage
+    properties:
+      errorMessage:
+        type: string
+      errorType:
+        type: string
+      stackTrace:
+        type: array
+        items:
+          $ref: '#/definitions/StackTrace'
+
+  StackTrace:
+    type: array
+    items:
+      type: string

@@ -1,0 +1,16 @@
+.vscode
+.DS_Store
+.build_*
+build_*
+__pycache__
+*.pyc
+output
+**/output
+npm-debug.log
+**/jest_0
+.build*
+.cache
+.pytest_cache
+systemtests/reports
+packages
+.python-version
