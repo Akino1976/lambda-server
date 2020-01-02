@@ -9,7 +9,7 @@ services:
       - ./packages:/packages
 
   lambdaserver:
-    image: bambora-dkr.jfrog.io/lambdaserver-python3.7:${VERSION}
+    image: akino1976/lambda-server:${VERSION}
     environment:
       PACKAGE_NAME: ${PACKAGE_NAME}
       PYTHONDONTWRITEBYTECODE: 1
@@ -17,7 +17,7 @@ services:
       - ./packages:/packages
 
   lambdaserver-watch:
-    image: bambora-dkr.jfrog.io/lambdaserver-python3.7:${VERSION}
+    image: akino1976/lambda-server::${VERSION}
     command: watchmedo auto-restart --patterns="*.py;*.y*ml" python app.py
     environment:
       PYTHONDONTWRITEBYTECODE: 1
@@ -36,15 +36,12 @@ services:
       - ./example_handler:/var/task
 
   systemtests-base:
-    image: systemtests-lambdaserver-python3.7:${TEST_VERSION}
+    image: systemtests-lambda-server:${TEST_VERSION}
     environment:
       PYTHONDONTWRITEBYTECODE: 1
     build:
       context: systemtests
       dockerfile: Dockerfile
-      args:
-        BAMBORA_PYPI_USERNAME: ${BAMBORA_PYPI_USERNAME}
-        BAMBORA_PYPI_PASSWORD: ${BAMBORA_PYPI_PASSWORD}
 
   systemtests:
     extends:
