@@ -5,7 +5,7 @@ import contextlib
 
 def pytest_sessionstart(session):
     """ Sleeps for up to 60 seconds before session.main() is called. """
-    for i in range(0, 120):
+    for i in range(0, 60):
         print(
             'Waiting for lambdaserver to start: {seconds} seconds waited'
             .format(seconds=(i / 2))

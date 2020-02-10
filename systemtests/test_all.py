@@ -1,4 +1,8 @@
 import pytest_bdd
-from fantestic.systemtest import *
+
+from fixtures import *
+from features.steps.givens import *
+from features.steps.whens import *
+from features.steps.thens import *
 
 pytest_bdd.scenarios('features')
