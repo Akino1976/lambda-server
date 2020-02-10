@@ -9,7 +9,16 @@ import helpers.utils as utils
 
 import yaml
 
-LOGGER = logging.getLogger('app-framework')
+LOGGER = logging.getLogger('lambda-server')
+
+
+@given(parsers.parse('the request body:\n{yaml_string}'), target_fixture='request_body')
+def create_request_body(request: Any, yaml_string: Any) -> Any:
+    yaml_string = yaml.load(yaml_string, Loader=yaml.FullLoader)
+
+    LOGGER.info(f'Request body set to:\n{utils.pretty_format(yaml_string)}')
+
+    return yaml_string
 
 
 @given(parsers.parse('the parameters:\n{yaml_string}'), target_fixture='parameters')
@@ -24,16 +33,3 @@ def set_module(module: str):
     LOGGER.info(f'Base module set to {module}')
 
     pass
-
-
-@given('a error message in exception table', target_fixture='datadog_instance')
-def invoke_datadog():
-    insert_data(
-        database='Datastore',
-        table_name='sqlsp_error_log',
-        dataset=exception_log
-    )
-
-    datadog_instance = Datadog()
-
-    return datadog_instance

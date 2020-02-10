@@ -17,7 +17,7 @@ services:
       - ./packages:/packages
 
   lambdaserver-watch:
-    image: akino1976/lambda-server::${VERSION}
+    image: akino1976/lambda-server:${VERSION}
     command: watchmedo auto-restart --patterns="*.py;*.y*ml" python app.py
     environment:
       PYTHONDONTWRITEBYTECODE: 1
